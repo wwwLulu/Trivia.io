@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <title>Trivia.io</title>
+    </head>
+    <body>
+        <!-- Vue App -->
+        <div id="app">
+            <button @click="generateQuiz" class="btn">Generate Quiz</button>
+            <button @click="getQuestion" class="btn">Get Question</button>
+            <p>{{room}}</p>
+            <p v-for="user in userList" :key="user">{{user}}</p>
+            <p v-html="question">{{question}}</p>
+            <p v-for="choice in choices" :key="choice">{{choice}}</p>
+            <p>{{answer}}</p>
+        </div>
+
+        <!-- Scripts -->
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://unpkg.com/vue@next"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.6.0/qs.min.js"></script>
+
+        <!-- Vue App -->
+        <script>
+            const app = Vue.createApp({
+                data() {
+                    return {
+                        username: '',
+                        userList: [],
+                        room: '',
+                        question: '',
+                        answer: '',
+                        choices: [],
+                    }
+                },
+                methods: {
+                    shuffleArray(a) {
+                        for (let i = a.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1))
+                            ;[a[i], a[j]] = [a[j], a[i]]
+                        }
+                        return a
+                    },
+                    generateQuiz() {
+                        socket.emit('generateQuiz')
+                    },
+                    getQuestion() {
+                        socket.emit('getQuestion')
+                    },
+                },
+            }).mount('#app')
+        </script>
+
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            .btn {
+                cursor: pointer;
+                padding: 5px 10px;
+                background: teal;
+                border: none;
+                color: white;
+                margin: 0 10px;
+            }
+            .btn:hover {
+                background: white;
+                border: 1px solid teal;
+                color: teal;
+            }
+        </style>
+
+        <!-- Socket Events && General -->
+        <script>
+            //Options | Parameters | Query
+            const { username, room } = Qs.parse(location.search, {
+                ignoreQueryPrefix: true,
+            })
+            app.username = username
+            app.room = room
+
+            //Socket Events
+            const socket = io()
+            //Server => Browser
+            socket.emit('join', { username, room }, (error) => {
+                if (error) {
+                    alert(error)
+                    location.href = '/'
+                }
+                console.log(`${username} has joined room ${room}!`)
+            })
+
+            socket.on('showQuestion', ({ question, answer, choices }) => {
+                app.question = question
+                app.answer = answer
+                app.choices = choices
+                choices = app.shuffleArray(choices)
+                console.log(question, answer)
+                console.table(choices)
+            })
+
+            socket.on('usersList', ({ users }) => {
+                app.userList = users.map((user) => user.username)
+            })
+        </script>
+    </body>
+</html>
