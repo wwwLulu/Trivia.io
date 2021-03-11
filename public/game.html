@@ -95,10 +95,10 @@
             })
 
             socket.on('showQuestion', ({ question, answer, choices }) => {
+                choices = app.shuffleArray(choices)
                 app.question = question
                 app.answer = answer
                 app.choices = choices
-                choices = app.shuffleArray(choices)
                 console.log(question, answer)
                 console.table(choices)
             })
