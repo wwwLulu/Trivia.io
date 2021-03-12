@@ -13,7 +13,7 @@ const quizzes = {}
  */
 const generateQuiz = async (room) => {
     const req = await fetch(
-        'https://opentdb.com/api.php?amount=10&category=31&difficulty=easy&type=multiple'
+        'https://opentdb.com/api.php?amount=10&category=31&type=multiple'
     )
     const data = await req.json()
     const quiz = data.results

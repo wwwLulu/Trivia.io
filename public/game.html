@@ -4,31 +4,46 @@
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="style.css" />
 
         <title>Trivia.io</title>
     </head>
     <body>
         <!-- Vue App -->
         <div id="app">
-            <button @click="generateQuiz" class="btn">Generate Quiz</button>
-            <button v-if="quizAcitve" @click="getQuestion" class="btn">
-                Get Question
-            </button>
-            <p>{{room}}</p>
-            <p v-for="user in userList" :key="user">
-                {{user}} - {{userPoints}}
-            </p>
-            <div v-if="quizAcitve" class="quiz">
-                <p v-html="question"></p>
-                <button
-                    @click="lockInAnswer"
-                    class="btn choice"
-                    v-for="choice in choices"
-                    :key="choice"
-                    v-html="choice"
-                    :disabled="lockedInAnswer"
-                ></button>
-                <p v-if="displayAnswer" v-html="answer"></p>
+            <div v-if="!quizActive" class="lobby">
+                <p class="lobby__room-code">{{room}}</p>
+                <div class="lobby__user-list">
+                    <p v-for="user in userList" :key="user">{{user}}</p>
+                </div>
+                <button @click="generateQuiz" class="btn">Generate Quiz</button>
+            </div>
+
+            <div v-if="quizActive && questionInSession" class="quiz">
+                <button @click="getQuestion" class="btn">Get Question</button>
+                <p class="quiz__question" v-html="question"></p>
+                <div class="quiz__choices">
+                    <button
+                        @click="lockInAnswer"
+                        class="btn quiz__choice"
+                        v-for="choice in choices"
+                        :key="choice"
+                        v-html="choice"
+                    ></button>
+                </div>
+                <ul>
+                    <li v-for="user in usersInfo" :key="user">
+                        {{user.username}} - {{user.points}}
+                    </li>
+                </ul>
+            </div>
+
+            <div v-if="quizActive && !questionInSession" class="rankings">
+                <div class="rankings__user-list">
+                    <p v-for="user in usersInfo" :key="user.name">
+                        {{user.username}} - {{user.points}}
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -43,12 +58,13 @@
             const app = Vue.createApp({
                 data() {
                     return {
-                        quizAcitve: false,
-                        lockedInAnswer: false,
+                        questionInSession: true,
+                        quizActive: false,
                         displayAnswer: false,
                         userGuess: '',
                         userPoints: 0,
                         username: '',
+                        usersInfo: [],
                         userList: [],
                         room: '',
                         question: '',
@@ -59,30 +75,38 @@
                 watch: {
                     quizQuestions(questions) {
                         if ((questions = 0)) {
-                            this.quizAcitve = false
+                            this.quizActive = false
                         }
                     },
                 },
                 methods: {
                     lockInAnswer(e) {
-                        this.lockedInAnswer = true
                         this.userGuess = e.target.innerHTML
+                        console.log(this.userGuess)
                         document
-                            .querySelectorAll('.choice')
+                            .querySelectorAll('.quiz__choice')
                             .forEach((choice) => {
-                                if (!choice.innerHTML == this.answer) {
-                                    choice.setAttribute('disabled', 'disabled')
-                                    choice.addClass('semi-transparent')
+                                if (choice.innerHTML == this.userGuess) {
+                                    choice.classList.add('btn--highlight')
+                                } else {
+                                    choice.classList.add('semi-transparent')
                                 }
+                                choice.setAttribute('disabled', 'disabled')
                             })
                         this.showAnswer()
                     },
                     showAnswer() {
-                        this.displayAnswer = true
+                        document
+                            .querySelectorAll('.quiz__choice')
+                            .forEach((choice) => {
+                                if (choice.innerHTML != this.answer) {
+                                    choice.classList.add('invisible')
+                                    choice.classList.remove('semi-transparent')
+                                }
+                            })
                         this.checkAnswer()
                     },
                     checkAnswer() {
-                        console.log(this.userGuess, this.answer)
                         if (this.userGuess == this.answer) {
                             this.userPoints++
                             socket.emit('incrementPoints')
@@ -99,39 +123,16 @@
                         socket.emit('generateQuiz', () => {
                             this.getQuestion()
                         })
-                        this.quizAcitve = true
+                        this.quizActive = true
                         this.userPoints = 0
                     },
                     getQuestion() {
                         socket.emit('getQuestion')
-                        this.lockedInAnswer = false
                         this.displayAnswer = false
                     },
                 },
             }).mount('#app')
         </script>
-
-        <style>
-            * {
-                box-sizing: border-box;
-            }
-            .semi-transparent {
-                opacity: 0.5 !important;
-            }
-            .btn {
-                cursor: pointer;
-                padding: 5px 10px;
-                background: teal;
-                border: none;
-                color: white;
-                margin: 0 10px;
-            }
-            .btn:hover {
-                background: white;
-                border: 1px solid teal;
-                color: teal;
-            }
-        </style>
 
         <!-- Socket Events && General -->
         <script>
@@ -158,20 +159,28 @@
                 app.question = question
                 app.answer = answer
                 app.choices = choices
-                console.log(question, answer)
-                console.table(choices)
+                // console.log(question, answer)
+                // console.table(choices)
             })
 
             socket.on('updateScores', (userList) => {
                 console.table(userList)
+                app.usersInfo = userList
             })
 
             socket.on('usersList', ({ users }) => {
                 app.userList = users.map((user) => user.username)
+                console.table(users)
+                app.usersInfo = users
+            })
+
+            socket.on('startQuiz', () => {
+                app.quizActive = true
+                app.userPoints = 0
             })
 
             socket.on('endQuiz', () => {
-                app.quizAcitve = false
+                app.quizActive = false
             })
         </script>
     </body>

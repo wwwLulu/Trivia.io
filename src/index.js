@@ -49,6 +49,7 @@ io.on('connection', (socket) => {
     socket.on('generateQuiz', async (callback) => {
         const user = getUser(socket.id)
         await generateQuiz(user.room)
+        socket.broadcast.to(user.room).emit('startQuiz')
         callback()
     })
 
