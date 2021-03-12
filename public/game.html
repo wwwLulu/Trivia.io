@@ -11,12 +11,25 @@
         <!-- Vue App -->
         <div id="app">
             <button @click="generateQuiz" class="btn">Generate Quiz</button>
-            <button @click="getQuestion" class="btn">Get Question</button>
+            <button v-if="quizAcitve" @click="getQuestion" class="btn">
+                Get Question
+            </button>
             <p>{{room}}</p>
-            <p v-for="user in userList" :key="user">{{user}}</p>
-            <p v-html="question">{{question}}</p>
-            <p v-for="choice in choices" :key="choice">{{choice}}</p>
-            <p>{{answer}}</p>
+            <p v-for="user in userList" :key="user">
+                {{user}} - {{userPoints}}
+            </p>
+            <div v-if="quizAcitve" class="quiz">
+                <p v-html="question"></p>
+                <button
+                    @click="lockInAnswer"
+                    class="btn choice"
+                    v-for="choice in choices"
+                    :key="choice"
+                    v-html="choice"
+                    :disabled="lockedInAnswer"
+                ></button>
+                <p v-if="displayAnswer" v-html="answer"></p>
+            </div>
         </div>
 
         <!-- Scripts -->
@@ -26,9 +39,15 @@
 
         <!-- Vue App -->
         <script>
+            'use strict'
             const app = Vue.createApp({
                 data() {
                     return {
+                        quizAcitve: false,
+                        lockedInAnswer: false,
+                        displayAnswer: false,
+                        userGuess: '',
+                        userPoints: 0,
                         username: '',
                         userList: [],
                         room: '',
@@ -37,7 +56,38 @@
                         choices: [],
                     }
                 },
+                watch: {
+                    quizQuestions(questions) {
+                        if ((questions = 0)) {
+                            this.quizAcitve = false
+                        }
+                    },
+                },
                 methods: {
+                    lockInAnswer(e) {
+                        this.lockedInAnswer = true
+                        this.userGuess = e.target.innerHTML
+                        document
+                            .querySelectorAll('.choice')
+                            .forEach((choice) => {
+                                if (!choice.innerHTML == this.answer) {
+                                    choice.setAttribute('disabled', 'disabled')
+                                    choice.addClass('semi-transparent')
+                                }
+                            })
+                        this.showAnswer()
+                    },
+                    showAnswer() {
+                        this.displayAnswer = true
+                        this.checkAnswer()
+                    },
+                    checkAnswer() {
+                        console.log(this.userGuess, this.answer)
+                        if (this.userGuess == this.answer) {
+                            this.userPoints++
+                            socket.emit('incrementPoints')
+                        }
+                    },
                     shuffleArray(a) {
                         for (let i = a.length - 1; i > 0; i--) {
                             const j = Math.floor(Math.random() * (i + 1))
@@ -46,10 +96,16 @@
                         return a
                     },
                     generateQuiz() {
-                        socket.emit('generateQuiz')
+                        socket.emit('generateQuiz', () => {
+                            this.getQuestion()
+                        })
+                        this.quizAcitve = true
+                        this.userPoints = 0
                     },
                     getQuestion() {
                         socket.emit('getQuestion')
+                        this.lockedInAnswer = false
+                        this.displayAnswer = false
                     },
                 },
             }).mount('#app')
@@ -58,6 +114,9 @@
         <style>
             * {
                 box-sizing: border-box;
+            }
+            .semi-transparent {
+                opacity: 0.5 !important;
             }
             .btn {
                 cursor: pointer;
@@ -103,8 +162,16 @@
                 console.table(choices)
             })
 
+            socket.on('updateScores', (userList) => {
+                console.table(userList)
+            })
+
             socket.on('usersList', ({ users }) => {
                 app.userList = users.map((user) => user.username)
+            })
+
+            socket.on('endQuiz', () => {
+                app.quizAcitve = false
             })
         </script>
     </body>

@@ -24,6 +24,9 @@ const generateQuiz = async (room) => {
  *@param {String} room
  */
 const getQuestion = (room) => {
+    if (!quizzes[room][0]) {
+        return
+    }
     let question = quizzes[room][0].question
     let answer = quizzes[room][0].correct_answer
     let choices = quizzes[room][0].incorrect_answers

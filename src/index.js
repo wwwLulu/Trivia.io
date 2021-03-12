@@ -46,20 +46,28 @@ io.on('connection', (socket) => {
         }
     })
 
-    socket.on('generateQuiz', async () => {
+    socket.on('generateQuiz', async (callback) => {
         const user = getUser(socket.id)
         await generateQuiz(user.room)
+        callback()
     })
 
     socket.on('getQuestion', () => {
         const user = getUser(socket.id)
         let question = getQuestion(user.room)
-        io.to(user.room).emit('showQuestion', question)
+        if (question == null) {
+            io.to(user.room).emit('endQuiz')
+        } else {
+            io.to(user.room).emit('showQuestion', question)
+        }
     })
 
-    // socket.on('quizFinished', (room) => {
-    //     generateQuiz(room)
-    // })
+    socket.on('incrementPoints', () => {
+        const user = getUser(socket.id)
+        user.points++
+        const userList = getUsersInRoom(user.room)
+        io.to(user.room).emit('updateScores', userList)
+    })
 })
 
 server.listen(port, () => {
