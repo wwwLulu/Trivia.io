@@ -82,7 +82,6 @@
                 methods: {
                     lockInAnswer(e) {
                         this.userGuess = e.target.innerHTML
-                        console.log(this.userGuess)
                         document
                             .querySelectorAll('.quiz__choice')
                             .forEach((choice) => {
@@ -151,7 +150,6 @@
                     alert(error)
                     location.href = '/'
                 }
-                console.log(`${username} has joined room ${room}!`)
             })
 
             socket.on('showQuestion', ({ question, answer, choices }) => {
@@ -159,18 +157,14 @@
                 app.question = question
                 app.answer = answer
                 app.choices = choices
-                // console.log(question, answer)
-                // console.table(choices)
             })
 
             socket.on('updateScores', (userList) => {
-                console.table(userList)
                 app.usersInfo = userList
             })
 
             socket.on('usersList', ({ users }) => {
                 app.userList = users.map((user) => user.username)
-                console.table(users)
                 app.usersInfo = users
             })
 
