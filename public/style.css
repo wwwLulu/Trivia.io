@@ -60,8 +60,9 @@ body {
     font-weight: bold; }
   .lobby__user-list {
     max-height: 60rem;
-    margin: 1rem 0;
     font-size: 2rem; }
+    .lobby__user-list * {
+      margin: 1rem 0; }
 
 .quiz {
   width: 100%;

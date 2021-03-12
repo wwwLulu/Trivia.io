@@ -69,6 +69,26 @@ io.on('connection', (socket) => {
         const userList = getUsersInRoom(user.room)
         io.to(user.room).emit('updateScores', userList)
     })
+
+    socket.on('countdownTimer', () => {
+        const user = getUser(socket.id)
+        let questionTime = 10
+        const tick = setInterval(() => {
+            io.to(user.room).emit('tickDown', questionTime)
+            questionTime--
+            if (questionTime == -1) {
+                clearInterval(tick)
+                io.to(user.room).emit('showAnswer')
+                setTimeout(() => {
+                    questionTime = 10
+                    io.to(user.room).emit('getQuestion')
+                    setTimeout(() => {
+                        io.to(user.room).emit('showLeaderboard')
+                    }, 3000)
+                }, 3000)
+            }
+        }, 1000)
+    })
 })
 
 server.listen(port, () => {

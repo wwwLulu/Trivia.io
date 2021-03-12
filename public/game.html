@@ -20,6 +20,7 @@
             </div>
 
             <div v-if="quizActive && questionInSession" class="quiz">
+                <div class="timer">{{questionTime}}</div>
                 <button @click="getQuestion" class="btn">Get Question</button>
                 <p class="quiz__question" v-html="question"></p>
                 <div class="quiz__choices">
@@ -31,11 +32,7 @@
                         v-html="choice"
                     ></button>
                 </div>
-                <ul>
-                    <li v-for="user in usersInfo" :key="user">
-                        {{user.username}} - {{user.points}}
-                    </li>
-                </ul>
+                `
             </div>
 
             <div v-if="quizActive && !questionInSession" class="rankings">
@@ -58,6 +55,8 @@
             const app = Vue.createApp({
                 data() {
                     return {
+                        questionTime: 10, //seconds
+                        questionBreakTime: 5,
                         questionInSession: true,
                         quizActive: false,
                         displayAnswer: false,
@@ -92,7 +91,6 @@
                                 }
                                 choice.setAttribute('disabled', 'disabled')
                             })
-                        this.showAnswer()
                     },
                     showAnswer() {
                         document
@@ -127,6 +125,7 @@
                     },
                     getQuestion() {
                         socket.emit('getQuestion')
+                        socket.emit('countdownTimer')
                         this.displayAnswer = false
                     },
                 },
@@ -175,6 +174,23 @@
 
             socket.on('endQuiz', () => {
                 app.quizActive = false
+            })
+
+            socket.on('tickDown', (time) => {
+                app.questionTime = time
+            })
+
+            socket.on('showAnswer', () => {
+                app.showAnswer()
+            })
+
+            socket.on('getQuestion', () => {
+                app.getQuestion()
+                app.questionInSession = false
+            })
+
+            socket.on('showLeaderboard', () => {
+                app.questionInSession = true
             })
         </script>
     </body>
