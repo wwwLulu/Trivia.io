@@ -20,8 +20,8 @@
             </div>
 
             <div v-if="quizActive && questionInSession" class="quiz">
-                <div class="timer">{{questionTime}}</div>
-                <button @click="getQuestion" class="btn">Get Question</button>
+                <div class="quiz__question-number">{{questionNumber}}</div>
+                <div class="quiz__timer">{{absoluteTime}}</div>
                 <p class="quiz__question" v-html="question"></p>
                 <div class="quiz__choices">
                     <button
@@ -37,7 +37,7 @@
 
             <div v-if="quizActive && !questionInSession" class="rankings">
                 <div class="rankings__user-list">
-                    <p v-for="user in usersInfo" :key="user.name">
+                    <p v-for="user in users" :key="user.username">
                         {{user.username}} - {{user.points}}
                     </p>
                 </div>
@@ -55,27 +55,26 @@
             const app = Vue.createApp({
                 data() {
                     return {
-                        questionTime: 10, //seconds
-                        questionBreakTime: 5,
                         questionInSession: true,
                         quizActive: false,
                         displayAnswer: false,
-                        userGuess: '',
-                        userPoints: 0,
-                        username: '',
-                        usersInfo: [],
-                        userList: [],
+
                         room: '',
+                        userGuess: '',
+                        username: '',
+                        users: [],
+                        userList: [],
+
+                        questionNumber: 0,
+                        questionTime: 10,
                         question: '',
                         answer: '',
                         choices: [],
                     }
                 },
-                watch: {
-                    quizQuestions(questions) {
-                        if ((questions = 0)) {
-                            this.quizActive = false
-                        }
+                computed: {
+                    absoluteTime() {
+                        return this.questionTime >= 0 ? this.questionTime : 0
                     },
                 },
                 methods: {
@@ -91,6 +90,7 @@
                                 }
                                 choice.setAttribute('disabled', 'disabled')
                             })
+                        this.checkAnswer()
                     },
                     showAnswer() {
                         document
@@ -101,13 +101,15 @@
                                     choice.classList.remove('semi-transparent')
                                 }
                             })
-                        this.checkAnswer()
                     },
                     checkAnswer() {
                         if (this.userGuess == this.answer) {
-                            this.userPoints++
                             socket.emit('incrementPoints')
                         }
+                    },
+                    generateQuiz() {
+                        socket.emit('generateQuiz')
+                        this.quizActive = true
                     },
                     shuffleArray(a) {
                         for (let i = a.length - 1; i > 0; i--) {
@@ -116,34 +118,21 @@
                         }
                         return a
                     },
-                    generateQuiz() {
-                        socket.emit('generateQuiz', () => {
-                            this.getQuestion()
-                        })
-                        this.quizActive = true
-                        this.userPoints = 0
-                    },
-                    getQuestion() {
-                        socket.emit('getQuestion')
-                        socket.emit('countdownTimer')
-                        this.displayAnswer = false
-                    },
                 },
             }).mount('#app')
         </script>
 
         <!-- Socket Events && General -->
         <script>
-            //Options | Parameters | Query
             const { username, room } = Qs.parse(location.search, {
                 ignoreQueryPrefix: true,
             })
             app.username = username
             app.room = room
 
-            //Socket Events
+            // SOCKET EVENTS
             const socket = io()
-            //Server => Browser
+
             socket.emit('join', { username, room }, (error) => {
                 if (error) {
                     alert(error)
@@ -151,32 +140,30 @@
                 }
             })
 
-            socket.on('showQuestion', ({ question, answer, choices }) => {
-                choices = app.shuffleArray(choices)
-                app.question = question
-                app.answer = answer
-                app.choices = choices
-            })
-
-            socket.on('updateScores', (userList) => {
-                app.usersInfo = userList
-            })
-
-            socket.on('usersList', ({ users }) => {
+            socket.on('updateUsers', ({ users }) => {
                 app.userList = users.map((user) => user.username)
-                app.usersInfo = users
+                app.users = users
             })
 
             socket.on('startQuiz', () => {
                 app.quizActive = true
-                app.userPoints = 0
+                socket.emit('startQuiz')
             })
 
             socket.on('endQuiz', () => {
                 app.quizActive = false
             })
 
-            socket.on('tickDown', (time) => {
+            socket.on('showQuestion', ({ question, answer, choices }) => {
+                choices = app.shuffleArray(choices)
+                app.questionNumber++
+                app.question = question
+                app.answer = answer
+                app.choices = choices
+                app.questionInSession = true
+            })
+
+            socket.on('updateTime', (time) => {
                 app.questionTime = time
             })
 
@@ -184,13 +171,12 @@
                 app.showAnswer()
             })
 
-            socket.on('getQuestion', () => {
-                app.getQuestion()
-                app.questionInSession = false
+            socket.on('updateScores', (userList) => {
+                app.users = userList
             })
 
             socket.on('showLeaderboard', () => {
-                app.questionInSession = true
+                app.questionInSession = false
             })
         </script>
     </body>

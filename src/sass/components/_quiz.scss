@@ -22,4 +22,15 @@
         width: 90vw;
         margin: 1rem 0;
     }
+    &__timer {
+        position: relative;
+        font-size: 3rem;
+        margin-bottom: 2rem;
+        font-weight: bold;
+        padding: 1rem;
+        border-radius: 50%;
+        background: teal;
+        color: white;
+        text-align: center;
+    }
 }
