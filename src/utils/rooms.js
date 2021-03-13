@@ -1,5 +1,5 @@
 const { users } = require('./users')
-
+const roomTime = {}
 const rooms = new Set()
 
 const createRoom = () => {
@@ -33,4 +33,5 @@ const cleanUpRooms = (room) => {
 module.exports = {
     createRoom,
     cleanUpRooms,
+    roomTime,
 }
