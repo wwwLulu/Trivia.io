@@ -5,6 +5,7 @@ const express = require('express')
 const socketio = require('socket.io')
 
 const {
+    clearUserPoints,
     addUser,
     removeUser,
     getUser,
@@ -33,6 +34,7 @@ io.on('connection', (socket) => {
         const { error, user } = addUser({ id: socket.id, username, room })
         if (error) return callback(error)
         socket.join(user.room)
+        user.points = 0
         io.to(user.room).emit('updateUsers', {
             users: getUsersInRoom(user.room),
         })
@@ -75,6 +77,7 @@ io.on('connection', (socket) => {
                         if (question == null) {
                             roomTime[user.room] = 10
                             roomQuizInSession[user.room] = false
+                            clearUserPoints(user.room)
                             io.to(user.room).emit('endQuiz')
                             clearInterval(tick)
                         } else {

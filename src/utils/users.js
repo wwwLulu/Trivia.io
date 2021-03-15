@@ -56,10 +56,19 @@ const getUsersInRoom = (room) => {
     return users.filter((user) => user.room === room.trim().toLowerCase())
 }
 
+const clearUserPoints = (room) => {
+    users.forEach((user) => {
+        if (user.room == room) {
+            user.points = 0
+        }
+    })
+}
+
 module.exports = {
     addUser,
     removeUser,
     getUser,
     getUsersInRoom,
     users,
+    clearUserPoints,
 }
