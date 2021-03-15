@@ -147,11 +147,11 @@
 
             socket.on('startQuiz', () => {
                 app.quizActive = true
-                socket.emit('startQuiz')
             })
 
             socket.on('endQuiz', () => {
                 app.quizActive = false
+                app.questionNumber = 0
             })
 
             socket.on('showQuestion', ({ question, answer, choices }) => {

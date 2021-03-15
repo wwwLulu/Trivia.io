@@ -49,10 +49,37 @@ io.on('connection', (socket) => {
         const user = getUser(socket.id)
         await generateQuiz(user.room)
         io.to(user.room).emit('startQuiz')
+        // const user = getUser(socket.id)
+        let question = getQuestion(user.room)
+        if (question == null) {
+            io.to(user.room).emit('endQuiz')
+        } else {
+            io.to(user.room).emit('showQuestion', question)
+        }
+        const tick = setInterval(() => {
+            roomTime[user.room]--
+            io.to(user.room).emit('updateTime', roomTime[user.room])
+            if (roomTime[user.room] == -1) {
+                io.to(user.room).emit('showAnswer')
+                setTimeout(() => {
+                    io.to(user.room).emit('showLeaderboard')
+                    setTimeout(() => {
+                        let question = getQuestion(user.room)
+                        if (question == null) {
+                            roomTime[user.room] = 10
+                            io.to(user.room).emit('endQuiz')
+                            clearInterval(tick)
+                        } else {
+                            roomTime[user.room] = 10
+                            io.to(user.room).emit('showQuestion', question)
+                        }
+                    }, 3000)
+                }, 3000)
+            }
+        }, 1000)
     })
 
     socket.on('startQuiz', () => {
-        console.log('startingQuiz')
         const user = getUser(socket.id)
         let question = getQuestion(user.room)
         if (question == null) {
@@ -70,6 +97,7 @@ io.on('connection', (socket) => {
                     setTimeout(() => {
                         let question = getQuestion(user.room)
                         if (question == null) {
+                            roomTime[user.room] = 10
                             io.to(user.room).emit('endQuiz')
                             clearInterval(tick)
                         } else {
