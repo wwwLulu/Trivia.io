@@ -80,6 +80,11 @@
                         return this.questionTime >= 0 ? this.questionTime : 0
                     },
                 },
+                watch: {
+                    users() {
+                        this.sortLeaderboards()
+                    },
+                },
                 methods: {
                     lockInAnswer(e) {
                         this.userGuess = e.target.innerHTML
@@ -120,6 +125,11 @@
                             ;[a[i], a[j]] = [a[j], a[i]]
                         }
                         return a
+                    },
+                    sortLeaderboards() {
+                        this.users.sort((user1, user2) => {
+                            return user2.points - user1.points
+                        })
                     },
                 },
             }).mount('#app')
