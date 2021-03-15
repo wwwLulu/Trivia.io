@@ -17,7 +17,6 @@ const generateQuiz = async (room) => {
     const data = await req.json()
     const quiz = data.results
     quizzes[room] = quiz
-    // quizzes[room].timer = 10
 }
 
 /**
@@ -38,15 +37,6 @@ const getQuestion = (room) => {
         answer,
     }
 }
-
-// const startTimer = (room) => {
-//     setInterval(() => {
-//         quizzes[room].timer--
-//         if (quizzes[room].timer == -1) {
-
-//         }
-//     },1000)
-// }
 
 module.exports = {
     generateQuiz,

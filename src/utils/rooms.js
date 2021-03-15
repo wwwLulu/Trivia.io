@@ -1,5 +1,16 @@
 const { users } = require('./users')
+/*
+roomtime
+{
+    room: {
+        quizTimer,
+        quizInSession
+    }
+}
+ key: [room] {quizTimer: 10, quizInSession: false}
+*/
 const roomTime = {}
+const roomQuizInSession = {}
 const rooms = new Set()
 
 const createRoom = () => {
@@ -34,4 +45,5 @@ module.exports = {
     createRoom,
     cleanUpRooms,
     roomTime,
+    roomQuizInSession,
 }
