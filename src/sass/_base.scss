@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;400;600;700&display=swap');
 :root {
     --color-primary: #58abda;
 }
@@ -16,8 +17,7 @@ html {
 }
 
 body {
-    padding: 3rem;
-    font-family: Meiryo, sans-serif, monospace;
+    font-family: 'Poppins', sans-serif;
     background: #eaeaea;
     max-width: 1925px;
     width: 100%;

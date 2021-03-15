@@ -14,6 +14,7 @@ const roomQuizInSession = {}
 const rooms = new Set()
 
 const createRoom = () => {
+    console.log('being called')
     //generate random 4 Letter Code
     const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('')
     const code = []

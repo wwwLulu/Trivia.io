@@ -22,7 +22,7 @@
             </div>
 
             <div v-if="quizActive && questionInSession" class="quiz">
-                <div class="quiz__question-number">{{questionNumber}}</div>
+                <div class="quiz__question--number">{{questionNumber}}</div>
                 <div class="quiz__timer">{{absoluteTime}}</div>
                 <p class="quiz__question" v-html="question"></p>
                 <div class="quiz__choices">

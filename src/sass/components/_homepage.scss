@@ -5,6 +5,11 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    h1 {
+        font-size: 5rem;
+        color: teal;
+        margin-bottom: 3rem;
+    }
     form {
         max-width: 60rem;
         * {
