@@ -17,6 +17,7 @@ const {
     roomQuizInSession,
 } = require('./utils/rooms')
 const { generateQuiz, getQuestion } = require('./utils/quiz')
+const { create } = require('domain')
 
 const app = express()
 const server = http.createServer(app)
