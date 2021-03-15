@@ -161,6 +161,7 @@
                 app.answer = answer
                 app.choices = choices
                 app.questionInSession = true
+                console.log(question, answer, choices)
             })
 
             socket.on('updateTime', (time) => {

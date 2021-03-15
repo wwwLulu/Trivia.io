@@ -48,10 +48,11 @@ io.on('connection', (socket) => {
     socket.on('generateQuiz', async () => {
         const user = getUser(socket.id)
         await generateQuiz(user.room)
-        socket.broadcast.to(user.room).emit('startQuiz')
+        io.to(user.room).emit('startQuiz')
     })
 
     socket.on('startQuiz', () => {
+        console.log('startingQuiz')
         const user = getUser(socket.id)
         let question = getQuestion(user.room)
         if (question == null) {
@@ -60,6 +61,7 @@ io.on('connection', (socket) => {
             io.to(user.room).emit('showQuestion', question)
         }
         const tick = setInterval(() => {
+            roomTime[user.room]--
             io.to(user.room).emit('updateTime', roomTime[user.room])
             if (roomTime[user.room] == -1) {
                 io.to(user.room).emit('showAnswer')
