@@ -14,7 +14,6 @@ const roomQuizInSession = {}
 const rooms = new Set()
 
 const createRoom = () => {
-    console.log('being called')
     //generate random 4 Letter Code
     const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('')
     const code = []
@@ -38,7 +37,10 @@ const createRoom = () => {
 const cleanUpRooms = (room) => {
     let roomSessions = users.filter((user) => user.room === room)
     if (roomSessions.length == 0) {
+        console.log('should be deleting all room data')
         rooms.delete(room)
+        delete roomTime[room]
+        delete roomQuizInSession[room]
     }
 }
 

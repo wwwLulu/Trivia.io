@@ -43,13 +43,16 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         const user = removeUser(socket.id)
-        cleanUpRooms()
         if (user) {
             io.to(user.room).emit('updateUsers', {
                 room: user.room,
                 users: getUsersInRoom(user.room),
             })
+            if (getUsersInRoom(user.room).length == 0) {
+                io.to(user.room).emit('endQuiz')
+            }
         }
+        cleanUpRooms(user.room)
     })
 
     socket.on('generateQuiz', async () => {
@@ -66,6 +69,9 @@ io.on('connection', (socket) => {
             io.to(user.room).emit('showQuestion', question)
         }
         const tick = setInterval(() => {
+            if (!!user.room) {
+                clearInterval(tick)
+            }
             roomTime[user.room]--
             io.to(user.room).emit('updateTime', roomTime[user.room])
             if (roomTime[user.room] == -1) {
