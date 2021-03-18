@@ -69,7 +69,7 @@ io.on('connection', (socket) => {
             io.to(user.room).emit('showQuestion', question)
         }
         const tick = setInterval(() => {
-            if (!!user.room) {
+            if (!roomTime[user.room]) {
                 clearInterval(tick)
             }
             roomTime[user.room]--
