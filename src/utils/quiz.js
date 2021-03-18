@@ -11,9 +11,7 @@ const quizzes = {}
  *@param {String} room
  */
 const generateQuiz = async (room) => {
-    const req = await fetch(
-        'https://opentdb.com/api.php?amount=10&category=31&type=multiple'
-    )
+    const req = await fetch('https://opentdb.com/api.php?amount=10')
     const data = await req.json()
     const quiz = data.results
     quizzes[room] = quiz
