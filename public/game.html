@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="style.css" />
+
+        <title>Trivia.io</title>
+    </head>
+    <body>
+        <!-- Vue App -->
+        <div id="app">
+            <div v-if="!quizActive" class="lobby">
+                <p class="lobby__room-code">{{room}}</p>
+                <div class="lobby__user-list">
+                    <p v-for="user in userList" :key="user">{{user}}</p>
+                </div>
+                <button v-if="!quizInSession" @click="generateQuiz" class="btn">
+                    Generate Quiz
+                </button>
+            </div>
+
+            <div v-if="quizActive && questionInSession" class="quiz">
+                <div class="quiz__question--number">{{questionNumber}}</div>
+                <div class="quiz__timer">{{absoluteTime}}</div>
+                <p class="quiz__question" v-html="question"></p>
+                <div class="quiz__choices">
+                    <button
+                        @click="lockInAnswer"
+                        class="btn quiz__choice"
+                        v-for="choice in choices"
+                        :key="choice"
+                        v-html="choice"
+                    ></button>
+                </div>
+                `
+            </div>
+
+            <div v-if="quizActive && !questionInSession" class="rankings">
+                <div class="rankings__user-list">
+                    <p v-for="user in users" :key="user.username">
+                        {{user.username}} - {{user.points}}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://unpkg.com/vue@next"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.6.0/qs.min.js"></script>
+
+        <!-- Vue App -->
+        <script>
+            'use strict'
+            const app = Vue.createApp({
+                data() {
+                    return {
+                        quizInSession: false,
+                        questionInSession: true,
+                        quizActive: false,
+                        displayAnswer: false,
+
+                        room: '',
+                        userGuess: '',
+                        username: '',
+                        users: [],
+                        userList: [],
+
+                        questionNumber: 0,
+                        questionTime: 10,
+                        question: '',
+                        answer: '',
+                        choices: [],
+                    }
+                },
+                computed: {
+                    absoluteTime() {
+                        return this.questionTime >= 0 ? this.questionTime : 0
+                    },
+                },
+                watch: {
+                    users() {
+                        this.sortLeaderboards()
+                    },
+                },
+                methods: {
+                    lockInAnswer(e) {
+                        this.userGuess = e.target.innerHTML
+                        document
+                            .querySelectorAll('.quiz__choice')
+                            .forEach((choice) => {
+                                if (choice.innerHTML == this.userGuess) {
+                                    choice.classList.add('btn--highlight')
+                                } else {
+                                    choice.classList.add('semi-transparent')
+                                }
+                                choice.setAttribute('disabled', 'disabled')
+                            })
+                        this.checkAnswer()
+                    },
+                    showAnswer() {
+                        document
+                            .querySelectorAll('.quiz__choice')
+                            .forEach((choice) => {
+                                if (choice.innerHTML != this.answer) {
+                                    choice.classList.add('invisible')
+                                    choice.classList.remove('semi-transparent')
+                                }
+                            })
+                    },
+                    checkAnswer() {
+                        if (this.userGuess == this.answer) {
+                            socket.emit('incrementPoints')
+                        }
+                        this.userGuess = 'fdadjfa'
+                    },
+                    generateQuiz() {
+                        socket.emit('generateQuiz')
+                        this.quizActive = true
+                    },
+                    shuffleArray(a) {
+                        for (let i = a.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1))
+                            ;[a[i], a[j]] = [a[j], a[i]]
+                        }
+                        return a
+                    },
+                    sortLeaderboards() {
+                        this.users.sort((user1, user2) => {
+                            return user2.points - user1.points
+                        })
+                    },
+                },
+            }).mount('#app')
+        </script>
+
+        <!-- Socket Events && General -->
+        <script>
+            const { username, room } = Qs.parse(location.search, {
+                ignoreQueryPrefix: true,
+            })
+            app.username = username
+            app.room = room
+
+            // SOCKET EVENTS
+            const socket = io()
+
+            socket.emit('join', { username, room }, (error) => {
+                if (error) {
+                    alert(error)
+                    location.href = '/'
+                }
+            })
+
+            socket.on('join', (quizInSession) => {
+                if (quizInSession == undefined) {
+                    app.quizInSession = true
+                }
+                if (quizInSession) {
+                    app.quizInSession = true
+                } else {
+                    app.quizInSession = false
+                }
+            })
+
+            socket.on('updateUsers', ({ users }) => {
+                app.userList = users.map((user) => user.username)
+                app.users = users
+            })
+
+            socket.on('startQuiz', () => {
+                app.quizActive = true
+            })
+
+            socket.on('endQuiz', () => {
+                app.quizActive = false
+                app.questionNumber = 0
+            })
+
+            socket.on('showQuestion', ({ question, answer, choices }) => {
+                choices = app.shuffleArray(choices)
+                app.questionNumber++
+                app.question = question
+                app.answer = answer
+                app.choices = choices
+                app.questionInSession = true
+            })
+
+            socket.on('updateTime', (time) => {
+                app.questionTime = time
+            })
+
+            socket.on('showAnswer', () => {
+                app.showAnswer()
+            })
+
+            socket.on('updateScores', (userList) => {
+                app.users = userList
+            })
+
+            socket.on('showLeaderboard', () => {
+                app.questionInSession = false
+            })
+        </script>
+    </body>
+</html>

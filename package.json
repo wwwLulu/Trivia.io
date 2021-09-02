@@ -1,0 +1,23 @@
+{
+    "name": "trivia.io",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js",
+        "compile:sass": "node-sass  src/sass/main.scss public/style.css -w"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^4.17.1",
+        "node-fetch": "^2.6.1",
+        "node-sass": "^5.0.0",
+        "socket.io": "^3.1.2"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.7"
+    }
+}

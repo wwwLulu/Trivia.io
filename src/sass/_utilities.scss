@@ -1,0 +1,26 @@
+.semi-transparent {
+    opacity: 0.5 !important;
+}
+
+.invisible {
+    opacity: 0;
+    display: none !important;
+}
+
+.btn {
+    transition: all 0.2s;
+    display: block;
+    cursor: pointer;
+    padding: 1rem 1.6rem;
+    background: teal;
+    border: none;
+    border-radius: 1rem;
+    color: white;
+    &:hover {
+        transition: all 0.2s;
+        transform: scale(0.97);
+    }
+    &--highlight {
+        border: 0.1rem solid teal;
+    }
+}

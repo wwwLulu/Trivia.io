@@ -1,0 +1,44 @@
+.quiz {
+    padding: 3rem;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    &__question--number {
+        font-size: 1.6rem;
+        margin-bottom: 1rem;
+    }
+    &__question {
+        max-width: 60rem;
+        width: 100%;
+        font-size: 2.5rem;
+        padding: 2rem 0;
+        line-height: 3rem;
+    }
+    &__choices {
+        max-width: 60rem;
+    }
+    &__choice {
+        font-size: 1.6 rem;
+        max-width: 60rem;
+        width: 90vw;
+        margin: 1rem 0;
+    }
+    &__timer {
+        width: 4rem;
+        height: 4rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        font-size: 3rem;
+        margin-bottom: 2rem;
+        font-weight: bold;
+        border-radius: 50%;
+        background: teal;
+        color: white;
+        text-align: center;
+    }
+}

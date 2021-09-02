@@ -1,0 +1,38 @@
+.form {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    h1 {
+        font-size: 5rem;
+        color: teal;
+        margin-bottom: 3rem;
+    }
+    form {
+        max-width: 60rem;
+        * {
+            border-radius: 1rem;
+            border: none;
+            padding: 1rem;
+            font-size: 2rem;
+
+            height: 4rem;
+        }
+        input {
+            display: block;
+            margin-bottom: 2rem;
+        }
+        button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            border: none;
+            background: teal;
+            color: white;
+            cursor: pointer;
+        }
+    }
+}
